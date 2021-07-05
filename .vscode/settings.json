@@ -1,5 +1,5 @@
 {
-    "idf.gitPath": "C:\\Users\\Medrenteh\\.espressif\\tools\\idf-git\\cmd\\git.exe",
+    "idf.gitPath": "C:\\embedded\\esp32\\tools\\idf-git\\cmd",
     "idf.espIdfPathWin": "C:\\embedded\\esp32\\esp-idf",
     "idf.toolsPathWin": "c:/embedded/esp32/tools",
     "idf.pythonBinPathWin": "c:\\embedded\\esp32\\python_env\\idf4.3_py3.8_env\\Scripts\\python.exe",
@@ -9,5 +9,6 @@
     "files.associations": {
         "array": "c",
         "string": "c"
-    }
+    },
+    "idf.portWin": "COM8"
 }

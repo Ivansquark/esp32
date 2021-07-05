@@ -86,7 +86,7 @@ void app_main(void)
         .cs_ena_pretrans = 0,
         .cs_ena_posttrans = 0,
         .duty_cycle_pos = 0,
-        .clock_speed_hz=1*1000*1000,           //Clock out at 10 MHz. 2MHz
+        .clock_speed_hz=12*1000*1000,           //Clock out at 10 MHz. 2MHz
         .input_delay_ns = 0,
         .mode=0,                                //SPI mode 0
         .spics_io_num=PIN_NUM_CS,               //CS pin
@@ -111,14 +111,14 @@ void app_main(void)
     //xTaskCreate(echo_task, "uart_echo_task", ECHO_TASK_STACK_SIZE, NULL, 10, NULL);
     uint8_t setFlag = 0;
     while(true) {
-        if(setFlag) {
-            gpio_set_level(BLINK_GPIO, 1); setFlag = 0;
-        } else {
-            gpio_set_level(BLINK_GPIO, 0); setFlag = 1;
-        }
+        // if(setFlag) {
+        //     gpio_set_level(BLINK_GPIO, 1); setFlag = 0;
+        // } else {
+        //     gpio_set_level(BLINK_GPIO, 0); setFlag = 1;
+        // }
         spi_device_polling_transmit(spi, &t);
-        arr[0] = 1; arr[1] = 2; arr[2] = 3; arr[3] = *((uint8_t*)t.rx_buffer+3);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        arr[0] -= 1; arr[1] = 2; arr[2] = 3; arr[3] = receivedArr[3];
+        vTaskDelay(250 / portTICK_PERIOD_MS);
     }
 }
 
