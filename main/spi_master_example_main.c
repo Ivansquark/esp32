@@ -55,7 +55,8 @@ uint32_t lcd_get_id(spi_device_handle_t spi)
 void delay(volatile uint32_t val) {
     while(val--);
 }
-volatile uint8_t arr[8] ={0x55, 0x55, 0x00, 0x55, 0x55, 0x00, 0x00, 0x55};
+volatile uint8_t arr[8] ={0x00, 0x00, 0x00, 0x00, 0x55, 0x00, 0x00, 0x55};
+volatile uint8_t receivedArr[4] = {0};
 void app_main(void)
 {
     gpio_reset_pin(BLINK_GPIO);
@@ -63,7 +64,7 @@ void app_main(void)
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
 
     gpio_set_level(BLINK_GPIO, 0);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);    
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     gpio_set_level(BLINK_GPIO, 1);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
@@ -85,7 +86,7 @@ void app_main(void)
         .cs_ena_pretrans = 0,
         .cs_ena_posttrans = 0,
         .duty_cycle_pos = 0,
-        .clock_speed_hz=10*1000*1000,           //Clock out at 10 MHz.
+        .clock_speed_hz=1*1000*1000,           //Clock out at 10 MHz. 2MHz
         .input_delay_ns = 0,
         .mode=0,                                //SPI mode 0
         .spics_io_num=PIN_NUM_CS,               //CS pin
@@ -101,16 +102,23 @@ void app_main(void)
     uint8_t* buffer = heap_caps_malloc(32, MALLOC_CAP_DMA); // for DMA transaction
 
     spi_transaction_t t;
-    memset(&t, 0, sizeof(t));    
+    memset(&t, 0, sizeof(t));
     t.length=4*8;
     t.rxlength = 4*8;
     t.tx_buffer = arr;
+    t.rx_buffer = receivedArr;
 
-    xTaskCreate(echo_task, "uart_echo_task", ECHO_TASK_STACK_SIZE, NULL, 10, NULL);
+    //xTaskCreate(echo_task, "uart_echo_task", ECHO_TASK_STACK_SIZE, NULL, 10, NULL);
+    uint8_t setFlag = 0;
     while(true) {
+        if(setFlag) {
+            gpio_set_level(BLINK_GPIO, 1); setFlag = 0;
+        } else {
+            gpio_set_level(BLINK_GPIO, 0); setFlag = 1;
+        }
         spi_device_polling_transmit(spi, &t);
-        arr[3] += 1;
-        vTaskDelay(300 / portTICK_PERIOD_MS);   
+        arr[0] = 1; arr[1] = 2; arr[2] = 3; arr[3] = *((uint8_t*)t.rx_buffer+3);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -147,8 +155,8 @@ static void echo_task(void *arg)
             gpio_set_level(BLINK_GPIO, 1); setFlag = 0;
         } else {
             gpio_set_level(BLINK_GPIO, 0); setFlag = 1;
-        } 
-        
+        }
+
         // Read data from the UART
         int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, BUF_SIZE, 20 / portTICK_RATE_MS);
         // Write data back to the UART
