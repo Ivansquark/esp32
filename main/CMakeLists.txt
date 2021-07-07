@@ -1,5 +1,5 @@
 set(srcs 
-    "spi_master_example_main.c"
+    main.cpp
     )
 
 
